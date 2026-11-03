@@ -1,0 +1,353 @@
+﻿
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLASH MARKET</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:#f4f1ff;color:#24203c;
+}
+header{
+ background:linear-gradient(110deg,#671cff,#ec35bd,#ff8b35);
+ color:white;padding:25px 6%;
+ display:flex;justify-content:space-between;
+ align-items:center;flex-wrap:wrap;gap:15px;
+}
+.logo{font-size:30px;font-weight:900}
+.logo span{color:#ffe45e}
+.cart-btn{
+ background:#fff;color:#7926d9;border:0;
+ border-radius:30px;padding:13px 22px;
+ font-weight:bold;cursor:pointer;font-size:16px;
+}
+.hero{
+ margin:25px auto;max-width:1200px;
+ padding:35px;border-radius:25px;color:white;
+ background:linear-gradient(120deg,#4020cf,#a52bea,#ff58a6);
+}
+.hero h1{font-size:38px;margin:0 0 12px}
+.hero p{font-size:17px}
+.search{
+ display:block;width:90%;max-width:1200px;
+ margin:20px auto;padding:17px;
+ border:2px solid #ddd;border-radius:15px;
+ font-size:16px;outline:none;
+}
+.categories{
+ max-width:1200px;margin:20px auto;
+ display:flex;gap:10px;flex-wrap:wrap;
+ padding:0 10px;
+}
+.categories button{
+ border:0;padding:13px 19px;border-radius:30px;
+ background:white;color:#6321c5;
+ font-weight:bold;cursor:pointer;
+ box-shadow:0 3px 10px #ddd;
+}
+.categories button.active,.categories button:hover{
+ background:#7728e9;color:white;
+}
+main{max-width:1200px;margin:30px auto;padding:0 12px}
+.section-title{font-size:25px}
+.products{
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+ gap:18px;
+}
+.card{
+ background:white;border-radius:20px;padding:17px;
+ box-shadow:0 5px 18px #ded5f5;
+ transition:.2s;
+}
+.card:hover{transform:translateY(-5px)}
+.picture{
+ height:145px;border-radius:15px;
+ display:flex;align-items:center;justify-content:center;
+ font-size:75px;
+ background:linear-gradient(135deg,#f0e6ff,#ffe5f4);
+}
+.card h3{font-size:17px;min-height:38px}
+.price{font-size:19px;font-weight:bold;color:#7925db}
+.add{
+ width:100%;padding:12px;border:0;border-radius:12px;
+ background:linear-gradient(100deg,#7625ec,#ed35a5);
+ color:white;font-weight:bold;cursor:pointer;
+}
+.add:hover{opacity:.85}
+.cart-panel{
+ display:none;position:fixed;right:0;top:0;
+ width: min(420px,100%);height:100vh;
+ overflow-y:auto;background:white;padding:25px;
+ box-shadow:0 0 0 100vw #0008;z-index:10;
+}
+.cart-panel.open{display:block}
+.cart-head{display:flex;justify-content:space-between;align-items:center}
+.close{border:0;background:#eee;border-radius:10px;padding:10px;cursor:pointer}
+.cart-item{
+ display:flex;justify-content:space-between;gap:10px;
+ border-bottom:1px solid #eee;padding:15px 0;
+ align-items:center;
+}
+.qty button{
+ border:0;background:#eee;padding:7px 11px;
+ border-radius:8px;cursor:pointer;
+}
+.total{font-size:23px;font-weight:bold;color:#7925db;margin:25px 0}
+.checkout{
+ width:100%;padding:15px;border:0;border-radius:13px;
+ color:white;background:#7728e9;font-size:17px;
+ cursor:pointer;
+}
+.empty{text-align:center;color:#888;padding:40px 0}
+footer{
+ margin-top:50px;padding:30px;text-align:center;
+ background:#261344;color:white;
+}
+@media(max-width:600px){
+ .hero h1{font-size:28px}
+ header{padding:20px}
+ .logo{font-size:24px}
+}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">⚡ FLASH <span>MARKET</span></div>
+ <button class="cart-btn" onclick="openCart()">
+ 🛒 Корзина (<span id="count">0</span>)
+ </button>
+</header>
+
+<section class="hero">
+ <h1>ПОКУПАЙ ЯРЧЕ! ⚡</h1>
+ <p>Добро пожаловать в FLASH MARKET — здесь есть всё!</p>
+ <b>60 товаров • 6 категорий • Удобные покупки</b>
+</section>
+
+<input class="search" id="search" placeholder="🔎 Найти товар..." oninput="render()">
+
+<div class="categories" id="categories"></div>
+
+<main>
+ <h2 class="section-title" id="heading">🔥 Все товары</h2>
+ <div class="products" id="products"></div>
+</main>
+
+<div class="cart-panel" id="cart">
+ <div class="cart-head">
+  <h2>🛒 Моя корзина</h2>
+  <button class="close" onclick="closeCart()">✖ Закрыть</button>
+ </div>
+ <div id="cartItems"></div>
+ <div class="total" id="total">Итого: 0 сум</div>
+ <button class="checkout" onclick="checkout()">Оформить заказ</button>
+</div>
+
+<footer>
+ <h2>⚡ FLASH MARKET</h2>
+ <p>Твой мир покупок в одном месте!</p>
+ <p>© 2026 FLASH MARKET</p>
+</footer>
+
+<script>
+const categories = [
+ {name:"Все товары",icon:"🔥"},
+ {name:"Электроника",icon:"📱"},
+ {name:"Одежда",icon:"👕"},
+ {name:"Спорт",icon:"⚽"},
+ {name:"Дом",icon:"🏠"},
+ {name:"Игрушки",icon:"🧸"},
+ {name:"Аксессуары",icon:"⌚"}
+];
+
+const data = {
+"Электроника":[
+["Смартфон", "📱",1800000],
+["Ноутбук","💻",6500000],
+["Наушники","🎧",250000],
+["Планшет","📲",2100000],
+["Клавиатура","⌨️",320000],
+["Мышка","🖱️",120000],
+["Монитор","🖥️",1900000],
+["Колонка","🔊",350000],
+["Фотоаппарат","📷",2800000],
+["Игровая приставка","🎮",4200000]
+],
+"Одежда":[
+["Футболка","👕",90000],
+["Кроссовки","👟",450000],
+["Кепка","🧢",75000],
+["Куртка","🧥",650000],
+["Джинсы","👖",280000],
+["Рюкзак","🎒",220000],
+["Носки","🧦",25000],
+["Платье","👗",350000],
+["Свитер","🧶",260000],
+["Шорты","🩳",130000]
+],
+"Спорт":[
+["Футбольный мяч","⚽",180000],
+["Баскетбольный мяч","🏀",200000],
+["Велосипед","🚲",1800000],
+["Ракетка","🏸",160000],
+["Гантели","🏋️",220000],
+["Скакалка","🪢",45000],
+["Самокат","🛴",750000],
+["Спортивная сумка","🎒",190000],
+["Бутылка для воды","🥤",55000],
+["Коврик","🧘",150000]
+],
+"Дом":[
+["Диван","🛋️",3500000],
+["Лампа","💡",150000],
+["Стул","🪑",250000],
+["Часы настенные","🕰️",180000],
+["Чайник","🫖",280000],
+["Кружка","☕",45000],
+["Подушка","🛏️",90000],
+["Ваза","🏺",120000],
+["Пылесос","🧹",950000],
+["Холодильник","🧊",5200000]
+],
+"Игрушки":[
+["Мишка","🧸",120000],
+["Конструктор","🧱",250000],
+["Машинка","🚗",65000],
+["Самолёт игрушечный","✈️",95000],
+["Робот","🤖",180000],
+["Кукла","🪆",140000],
+["Пазл","🧩",80000],
+["Поезд","🚂",160000],
+["Мячик","🟠",35000],
+["Игровой набор","🎁",220000]
+],
+"Аксессуары":[
+["Наручные часы","⌚",350000],
+["Очки","🕶️",140000],
+["Кошелёк","👛",110000],
+["Браслет","📿",85000],
+["Сумка","👜",290000],
+["Зонт","☂️",95000],
+["Чехол для телефона","📱",55000],
+["Кольцо","💍",120000],
+["Ремень","🪢",100000],
+["Наушники-кейс","🎧",70000]
+]
+};
+
+let products = [];
+let cart = {};
+let selected = "Все товары";
+
+let id = 0;
+for(const category in data){
+ data[category].forEach(item=>{
+  products.push({
+   id:id++,name:item[0],emoji:item[1],
+   price:item[2],category:category
+  });
+ });
+}
+
+function format(n){
+ return n.toLocaleString("ru-RU")+" сум";
+}
+
+function drawCategories(){
+ document.getElementById("categories").innerHTML =
+ categories.map(c=>`
+ <button class="${selected===c.name?'active':''}"
+ onclick="choose('${c.name}')">
+ ${c.icon} ${c.name}
+ </button>`).join("");
+}
+
+function choose(name){
+ selected=name;
+ document.getElementById("heading").textContent=
+ name==="Все товары"?"🔥 Все товары":name;
+ drawCategories();
+ render();
+}
+
+function render(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const filtered=products.filter(p=>
+  (selected==="Все товары"||p.category===selected)&&
+  p.name.toLowerCase().includes(q)
+ );
+ document.getElementById("products").innerHTML=
+ filtered.length?filtered.map(p=>`
+ <div class="card">
+  <div class="picture">${p.emoji}</div>
+  <h3>${p.name}</h3>
+  <p>${p.category}</p>
+  <div class="price">${format(p.price)}</div>
+  <br>
+  <button class="add" onclick="add(${p.id})">＋ В корзину</button>
+ </div>`).join(""):"<p>Товары не найдены 😔</p>";
+}
+
+function add(id){
+ cart[id]=(cart[id]||0)+1;
+ updateCart();
+}
+
+function change(id,amount){
+ cart[id]+=amount;
+ if(cart[id]<=0)delete cart[id];
+ updateCart();
+}
+
+function updateCart(){
+ const entries=Object.entries(cart);
+ document.getElementById("count").textContent=
+ entries.reduce((s,[id,n])=>s+n,0);
+
+ let total=0;
+ document.getElementById("cartItems").innerHTML=
+ entries.length?entries.map(([id,n])=>{
+  const p=products.find(x=>x.id==id);
+  total+=p.price*n;
+  return `
+  <div class="cart-item">
+   <div>${p.emoji} <b>${p.name}</b><br>
+   ${format(p.price)} × ${n}</div>
+   <div class="qty">
+    <button onclick="change(${id},-1)">−</button>
+    ${n}
+    <button onclick="change(${id},1)">+</button>
+   </div>
+  </div>`;
+ }).join(""):'<div class="empty">🛒<h3>Корзина пуста</h3>Добавь товары!</div>';
+
+ document.getElementById("total").textContent=
+ "Итого: "+format(total);
+}
+
+function openCart(){
+ document.getElementById("cart").classList.add("open");
+ updateCart();
+}
+function closeCart(){
+ document.getElementById("cart").classList.remove("open");
+}
+
+function checkout(){
+ if(Object.keys(cart).length===0){
+  alert("Сначала добавь товары в корзину!");
+  return;
+ }
+ alert("Это демонстрационный магазин. Настоящая оплата и отправка заказа пока не подключены.");
+}
+
+drawCategories();
+render();
+updateCart();
+</script>
+</body>
+</html>
